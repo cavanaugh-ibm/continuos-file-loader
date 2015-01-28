@@ -40,9 +40,6 @@ public abstract class BaseFileLoader extends CloudantWriter {
 
 	@Override
 	public WriteCode call() throws Exception {
-		System.out.println(fileName);
-		System.out.println(path);
-
 		Map<String, Object> map = getContentsAsMap(path);
 
 		String id = null;
@@ -52,15 +49,19 @@ public abstract class BaseFileLoader extends CloudantWriter {
 		}
 
 		WriteCode wc = upsert(id, map);
+		Path newPath = null;
 		switch (wc) {
 			case INSERT:
 			case UPDATE:
-				Files.move(path, dirCompleted.resolve(fileName + "." + System.currentTimeMillis()), REPLACE_EXISTING);
+				newPath = dirCompleted.resolve(fileName + "." + System.currentTimeMillis());
 				break;
 			default:
-				Files.move(path, dirFailed.resolve(fileName + "." + System.currentTimeMillis()), REPLACE_EXISTING);
+				newPath = dirFailed.resolve(fileName + "." + System.currentTimeMillis());
 				break;
 		}
+
+		log.debug("[id=" + id + "] - move - \"" + path + "\" --> \"" + newPath + "\"");
+		Files.move(path, newPath, REPLACE_EXISTING);
 
 		return wc;
 	}
