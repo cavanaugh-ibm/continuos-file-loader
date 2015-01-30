@@ -4,3 +4,4 @@
 target/
 load.log
 play/
+.DS_Store

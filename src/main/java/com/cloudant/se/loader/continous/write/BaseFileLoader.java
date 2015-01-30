@@ -15,8 +15,8 @@ import org.codehaus.jackson.JsonProcessingException;
 
 import com.cloudant.client.api.Database;
 import com.cloudant.se.Constants.WriteCode;
-import com.cloudant.se.db.loader.exception.StructureException;
-import com.cloudant.se.writer.CloudantWriter;
+import com.cloudant.se.db.exception.StructureException;
+import com.cloudant.se.db.writer.CloudantWriter;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.jayway.jsonpath.JsonPath;

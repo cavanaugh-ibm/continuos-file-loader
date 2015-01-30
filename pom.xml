@@ -105,7 +105,7 @@
 		<dependency>
 			<groupId>com.cloudant.se</groupId>
 			<artifactId>se-common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ektorp</groupId>
