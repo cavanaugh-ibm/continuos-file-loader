@@ -1,6 +1,6 @@
-# continuos-file-loader
+# file-data-loader
 
-Continuous file based loader for Cloudant
+File based loader for Cloudant
 
 * [Tests](#tests)
 * [License](#license)
