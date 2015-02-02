@@ -3,5 +3,6 @@
 .settings/
 target/
 load.log
+load.log.*
 play/
 .DS_Store

@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cloudant.se</groupId>
-	<artifactId>continuos-file-loader</artifactId>
+	<artifactId>file-data-loader</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Continuous File Loader</name>
 	<description>Program which will load files that appear in a defined directory to a cloudant instance</description>
@@ -56,6 +56,9 @@
 							<mainClass>com.cloudant.se.loader.onetime.App</mainClass>
 						</manifest>
 					</archive>
+					<excludes>
+						<exclude>**/log4j.properties</exclude>
+					</excludes>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
