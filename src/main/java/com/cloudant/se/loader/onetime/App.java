@@ -25,8 +25,8 @@ import com.cloudant.client.api.CloudantClient;
 import com.cloudant.client.api.Database;
 import com.cloudant.client.api.model.ConnectOptions;
 import com.cloudant.se.concurrent.StatusingThreadPoolExecutor;
-import com.cloudant.se.loader.continous.write.BaseFileLoader;
-import com.cloudant.se.loader.continous.write.JsonFileLoader;
+import com.cloudant.se.loader.file.write.BaseFileLoader;
+import com.cloudant.se.loader.file.write.JsonFileLoader;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**

@@ -1,4 +1,4 @@
-package com.cloudant.se.loader.continous.write;
+package com.cloudant.se.loader.file.write;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +16,7 @@ public class JsonFileLoader extends BaseFileLoader {
 	}
 
 	@Override
-	protected Map<String, Object> getContentsAsMap(Path path) throws IOException {
+	protected Map<String, Object> getContentsAsMap() throws IOException {
 		return new ObjectMapper().reader(Map.class).readValue(Files.readAllBytes(path));
 	}
 }

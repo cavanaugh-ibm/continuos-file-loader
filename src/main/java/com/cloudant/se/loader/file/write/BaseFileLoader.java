@@ -1,4 +1,4 @@
-package com.cloudant.se.loader.continous.write;
+package com.cloudant.se.loader.file.write;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -23,12 +23,12 @@ import com.google.common.collect.Lists;
 
 public abstract class BaseFileLoader extends CloudantWriter {
 	protected static final Logger	log			= Logger.getLogger(BaseFileLoader.class);
+	protected Configuration			config;
+	protected Path					dirCompleted;
+	protected Path					dirFailed;
+	protected Path					fileName;
+	protected Path					path;
 	protected Joiner				keyJoiner	= Joiner.on("_").skipNulls();
-	private Configuration			config;
-	private Path					fileName;
-	private Path					path;
-	private Path					dirCompleted;
-	private Path					dirFailed;
 
 	public BaseFileLoader(Configuration config, Database database, Path dirCompleted, Path dirFailed, Path name, Path path) {
 		super(database);
@@ -45,48 +45,46 @@ public abstract class BaseFileLoader extends CloudantWriter {
 
 	@Override
 	public WriteCode call() throws Exception {
+		String id = null;
 		try {
-			Map<String, Object> map = getContentsAsMap(path);
-
-			String id = null;
-			String idSource = config.getString("write.id.source", "filename");
-			if ("filename".equalsIgnoreCase(idSource)) {
-				id = FilenameUtils.removeExtension(fileName.toString());
-			} else if ("fields".equalsIgnoreCase(idSource)) {
-				String[] idFields = config.getStringArray("write.id.fields");
-
-				List<Object> values = Lists.newArrayList();
-				JXPathContext context = JXPathContext.newContext(map);
-
-				for (String field : idFields) {
-					values.add(context.getValue(field));
-				}
-
-				id = keyJoiner.join(values);
-			}
+			Map<String, Object> map = getContentsAsMap();
+			id = getId(map);
 
 			map.put("_id", id);
 			WriteCode wc = upsert(id, map);
-			Path newPath = null;
-			switch (wc) {
-				case INSERT:
-				case UPDATE:
-					newPath = dirCompleted.resolve(fileName + "." + System.currentTimeMillis());
-					break;
-				default:
-					newPath = dirFailed.resolve(fileName + "." + System.currentTimeMillis());
-					break;
-			}
 
-			log.debug("[id=" + id + "] - move - \"" + path + "\" --> \"" + newPath + "\"");
-			Files.move(path, newPath, REPLACE_EXISTING);
+			moveFile(id, wc);
 
 			return wc;
 		} catch (Exception e) {
-			e.printStackTrace();
-			Files.move(path, dirFailed.resolve(fileName + "." + System.currentTimeMillis()), REPLACE_EXISTING);
+			log.warn("[id=" + id + "] - exception", e);
+			moveFile(id, WriteCode.EXCEPTION);
 			return WriteCode.EXCEPTION;
 		}
+	}
+
+	protected abstract Map<String, Object> getContentsAsMap() throws IOException;
+
+	protected String getId(Map<String, Object> map) {
+		String id = null;
+		String idSource = config.getString("write.id.source", "filename");
+
+		if ("filename".equalsIgnoreCase(idSource)) {
+			id = FilenameUtils.removeExtension(fileName.toString());
+		} else if ("fields".equalsIgnoreCase(idSource)) {
+			String[] idFields = config.getStringArray("write.id.fields");
+
+			List<Object> values = Lists.newArrayList();
+			JXPathContext context = JXPathContext.newContext(map);
+
+			for (String field : idFields) {
+				values.add(context.getValue(field));
+			}
+
+			id = keyJoiner.join(values);
+		}
+
+		return id;
 	}
 
 	@Override
@@ -99,5 +97,23 @@ public abstract class BaseFileLoader extends CloudantWriter {
 		return failed;
 	}
 
-	protected abstract Map<String, Object> getContentsAsMap(Path path) throws IOException;
+	protected void moveFile(String id, WriteCode wc) {
+		Path newPath = null;
+		switch (wc) {
+			case INSERT:
+			case UPDATE:
+				newPath = dirCompleted.resolve(fileName + "." + System.currentTimeMillis());
+				break;
+			default:
+				newPath = dirFailed.resolve(fileName + "." + System.currentTimeMillis());
+				break;
+		}
+
+		try {
+			log.debug("[id=" + id + "] - move - \"" + path + "\" --> \"" + newPath + "\"");
+			Files.move(path, newPath, REPLACE_EXISTING);
+		} catch (IOException e) {
+			log.warn("[id=" + id + "] - move - FAILED - \"" + path + "\" --> \"" + newPath + "\"", e);
+		}
+	}
 }
