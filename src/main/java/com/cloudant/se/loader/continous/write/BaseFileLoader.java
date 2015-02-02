@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.jxpath.JXPathContext;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
 
@@ -19,7 +20,6 @@ import com.cloudant.se.db.exception.StructureException;
 import com.cloudant.se.db.writer.CloudantWriter;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.jayway.jsonpath.JsonPath;
 
 public abstract class BaseFileLoader extends CloudantWriter {
 	protected static final Logger	log			= Logger.getLogger(BaseFileLoader.class);
@@ -56,11 +56,10 @@ public abstract class BaseFileLoader extends CloudantWriter {
 				String[] idFields = config.getStringArray("write.id.fields");
 
 				List<Object> values = Lists.newArrayList();
+				JXPathContext context = JXPathContext.newContext(map);
 
-				//
-				// Hack for now - inefficient
 				for (String field : idFields) {
-					values.add(JsonPath.read(path.toFile(), field));
+					values.add(context.getValue(field));
 				}
 
 				id = keyJoiner.join(values);
