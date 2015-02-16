@@ -12,12 +12,12 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonProcessingException;
 
 import com.cloudant.client.api.Database;
 import com.cloudant.se.Constants.WriteCode;
 import com.cloudant.se.db.exception.StructureException;
 import com.cloudant.se.db.writer.CloudantWriter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
