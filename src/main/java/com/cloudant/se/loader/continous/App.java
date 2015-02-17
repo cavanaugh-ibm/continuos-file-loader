@@ -6,11 +6,8 @@ import static name.pachler.nio.file.StandardWatchEventKind.OVERFLOW;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import name.pachler.nio.file.FileSystems;
@@ -31,7 +28,7 @@ import com.beust.jcommander.ParameterException;
 import com.cloudant.client.api.CloudantClient;
 import com.cloudant.client.api.Database;
 import com.cloudant.client.api.model.ConnectOptions;
-import com.cloudant.se.concurrent.StatusingThreadPoolExecutor;
+import com.cloudant.se.concurrent.StatusingNotifyingBlockingThreadPoolExecutor;
 import com.cloudant.se.loader.file.write.BaseFileLoader;
 import com.cloudant.se.loader.file.write.JsonFileLoader;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -120,9 +117,8 @@ public class App {
 		}
 
 		int threads = config.getInt("write.threads");
-		BlockingQueue<Runnable> blockingQueue = new LinkedBlockingDeque<>(threads * 3);
 		ThreadFactory writeThreadFactory = new ThreadFactoryBuilder().setNameFormat("ldr-w-%d").build();
-		writerExecutor = new StatusingThreadPoolExecutor(threads, threads, 30, TimeUnit.SECONDS, blockingQueue, writeThreadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+		writerExecutor = new StatusingNotifyingBlockingThreadPoolExecutor(threads, threads * 2, 30, TimeUnit.SECONDS, writeThreadFactory);
 
 		return 0;
 	}

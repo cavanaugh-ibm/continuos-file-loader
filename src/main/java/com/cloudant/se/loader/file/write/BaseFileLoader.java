@@ -91,7 +91,7 @@ public abstract class BaseFileLoader extends CloudantWriter {
 	protected Map<String, Object> handleConflict(Map<String, Object> failed) throws StructureException, JsonProcessingException, IOException {
 		//
 		// In this base version, all we want is the latest revision number
-		Map<String, Object> fromC = getFromCloudant((String) failed.get("_id"));
+		Map<String, Object> fromC = get((String) failed.get("_id"));
 		failed.put("_rev", fromC.get("_rev"));
 
 		return failed;

@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>com.cloudant.se</groupId>
 			<artifactId>se-common</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jpathwatch</groupId>
