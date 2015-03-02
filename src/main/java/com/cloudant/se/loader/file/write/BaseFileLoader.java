@@ -1,5 +1,7 @@
 package com.cloudant.se.loader.file.write;
 
+import static com.cloudant.se.db.writer.CloudantWriteResult.errorResult;
+import static java.lang.String.format;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.IOException;
@@ -7,113 +9,125 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.log4j.Logger;
+import org.springframework.util.Assert;
 
 import com.cloudant.client.api.Database;
 import com.cloudant.se.Constants.WriteCode;
 import com.cloudant.se.db.exception.StructureException;
+import com.cloudant.se.db.writer.CloudantWriteResult;
 import com.cloudant.se.db.writer.CloudantWriter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public abstract class BaseFileLoader extends CloudantWriter {
-	protected static final Logger	log			= Logger.getLogger(BaseFileLoader.class);
-	protected Configuration			config;
-	protected Path					dirCompleted;
-	protected Path					dirFailed;
-	protected Path					fileName;
-	protected Path					path;
-	protected Joiner				keyJoiner	= Joiner.on("_").skipNulls();
+    public static final String    KEYWORD_PROCESSING = "_processing_";
+    protected static final Logger log                = Logger.getLogger(BaseFileLoader.class);
+    protected static final Joiner keyJoiner          = Joiner.on("_").skipNulls();
+    protected Path                dirCompleted       = null;
+    protected Path                dirFailed          = null;
+    protected Path                path               = null;
+    protected boolean             idFromFilename     = true;
+    protected String[]            idSourceFields     = null;
 
-	public BaseFileLoader(Configuration config, Database database, Path dirCompleted, Path dirFailed, Path name, Path path) {
-		super(database);
+    public BaseFileLoader(Database database, Path dirCompleted, Path dirFailed, Path path, boolean idFromFilename, String... idSourceFields) {
+        super(database);
 
-		this.config = config;
-		this.database = database;
+        this.database = database;
 
-		this.dirCompleted = dirCompleted;
-		this.dirFailed = dirFailed;
+        this.idFromFilename = idFromFilename;
 
-		this.fileName = name;
-		this.path = path;
-	}
+        if (!idFromFilename) {
+            Assert.notEmpty(idSourceFields, "Must provide a list of fields to create the _id from");
+            this.idSourceFields = idSourceFields;
+        }
 
-	@Override
-	public WriteCode call() throws Exception {
-		String id = null;
-		try {
-			Map<String, Object> map = getContentsAsMap();
-			id = getId(map);
+        this.dirCompleted = dirCompleted;
+        this.dirFailed = dirFailed;
 
-			map.put("_id", id);
-			WriteCode wc = upsert(id, map);
+        this.path = path;
+    }
 
-			moveFile(id, wc);
+    @Override
+    public CloudantWriteResult call() throws Exception {
+        String id = null;
+        try {
+            Map<String, Object> map = getContentsAsMap();
+            id = getId(map);
 
-			return wc;
-		} catch (Exception e) {
-			log.warn("[id=" + id + "] - exception", e);
-			moveFile(id, WriteCode.EXCEPTION);
-			return WriteCode.EXCEPTION;
-		}
-	}
+            map.put("_id", id);
+            CloudantWriteResult result = upsert(id, map);
 
-	protected abstract Map<String, Object> getContentsAsMap() throws IOException;
+            moveFile(id, result);
 
-	protected String getId(Map<String, Object> map) {
-		String id = null;
-		String idSource = config.getString("write.id.source", "filename");
+            return result;
+        } catch (Exception e) {
+            log.warn("[id=" + id + "] - exception", e);
+            CloudantWriteResult result = errorResult(WriteCode.EXCEPTION, e);
+            moveFile(id, result);
+            return result;
+        }
+    }
 
-		if ("filename".equalsIgnoreCase(idSource)) {
-			id = FilenameUtils.removeExtension(fileName.toString());
-		} else if ("fields".equalsIgnoreCase(idSource)) {
-			String[] idFields = config.getStringArray("write.id.fields");
+    protected abstract Map<String, Object> getContentsAsMap() throws IOException;
 
-			List<Object> values = Lists.newArrayList();
-			JXPathContext context = JXPathContext.newContext(map);
+    protected String getId(Map<String, Object> map) {
+        String id = null;
 
-			for (String field : idFields) {
-				values.add(context.getValue(field));
-			}
+        if (idFromFilename) {
+            id = FilenameUtils.removeExtension(path.getFileName().toString());
+        } else {
+            List<Object> values = Lists.newArrayList();
+            JXPathContext context = JXPathContext.newContext(map);
 
-			id = keyJoiner.join(values);
-		}
+            for (String field : idSourceFields) {
+                values.add(context.getValue(field));
+            }
 
-		return id;
-	}
+            id = keyJoiner.join(values);
+        }
 
-	@Override
-	protected Map<String, Object> handleConflict(Map<String, Object> failed) throws StructureException, JsonProcessingException, IOException {
-		//
-		// In this base version, all we want is the latest revision number
-		Map<String, Object> fromC = get((String) failed.get("_id"));
-		failed.put("_rev", fromC.get("_rev"));
+        return id;
+    }
 
-		return failed;
-	}
+    @Override
+    protected Map<String, Object> handleConflict(Map<String, Object> failed) throws StructureException, JsonProcessingException, IOException {
+        //
+        // In this base version, all we want is the latest revision number
+        Map<String, Object> fromC = get((String) failed.get("_id"));
+        failed.put("_rev", fromC.get("_rev"));
 
-	protected void moveFile(String id, WriteCode wc) {
-		Path newPath = null;
-		switch (wc) {
-			case INSERT:
-			case UPDATE:
-				newPath = dirCompleted.resolve(fileName + "." + System.currentTimeMillis());
-				break;
-			default:
-				newPath = dirFailed.resolve(fileName + "." + System.currentTimeMillis());
-				break;
-		}
+        return failed;
+    }
 
-		try {
-			log.debug("[id=" + id + "] - move - \"" + path + "\" --> \"" + newPath + "\"");
-			Files.move(path, newPath, REPLACE_EXISTING);
-		} catch (IOException e) {
-			log.warn("[id=" + id + "] - move - FAILED - \"" + path + "\" --> \"" + newPath + "\"", e);
-		}
-	}
+    protected void moveFile(String id, CloudantWriteResult result) {
+        Path newPath = null;
+        String fileNameString = path.getFileName().toString();
+        String baseName = fileNameString.substring(0, fileNameString.indexOf(KEYWORD_PROCESSING));
+
+        //
+        // TODO add in information about what we did - rev info for instance
+        //
+        switch (result.getWriteCode()) {
+            case INSERT:
+            case UPDATE:
+                newPath = dirCompleted.resolve(format("%s__ID-%s__REV-%s__UUID-%s", baseName, result.getId(), result.getRev(), UUID.randomUUID()));
+                break;
+            default:
+                newPath = dirFailed.resolve(format("%s__CODE-%s__UUID-%s", baseName, result.getWriteCode(), UUID.randomUUID()));
+                break;
+        }
+
+        try {
+            log.debug("[id=" + id + "] - move - \"" + path + "\" --> \"" + newPath + "\"");
+            Files.move(path, newPath, REPLACE_EXISTING);
+        } catch (IOException e) {
+            log.warn("[id=" + id + "] - move - FAILED - \"" + path + "\" --> \"" + newPath + "\"", e);
+        }
+    }
 }

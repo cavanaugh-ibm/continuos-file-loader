@@ -2,6 +2,8 @@
 
 File based loader for Cloudant
 
+Note - this exists as its own project because it uses Java 7+ features and the other projects must stay at Java 6 for specific customers
+
 * [Tests](#tests)
 * [License](#license)
 

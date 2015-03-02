@@ -1,0 +1,87 @@
+{
+    "store" : {
+        "store_id" : 1570,
+        "store_name" : "Food Lion Grocery Store of Mooresville",
+        "store_status" : 1,
+        "store_line1address" : "835 Williamson Rd",
+        "store_line2address" : "",
+        "store_city" : "Mooresville",
+        "store_state" : "NC",
+        "store_zip" : "28117",
+        "store_phoneno" : "704-799-9425",
+        "store_latitude" : 35.557000,
+        "store_longitude" : -80.859600,
+        "store_shop_mall_dsc" : "Watermark Shopping Center",
+        "last_update_timestmp" : "2014-10-15 14:48:43",
+        "banner" : [ {
+            "bnnr_nbr" : 1,
+            "bnnr_dsc" : "FOOD LION",
+            "last_update_timestmp" : "2006-08-23 19:47:28"
+        } ],
+        "services" : [ {
+            "services_typ_id" : "WINE",
+            "std_services_dsc" : "Wine",
+            "last_update_timestmp" : "2014-10-02 01:02:46"
+        }, {
+            "services_typ_id" : "BEER",
+            "std_services_dsc" : "Beer",
+            "last_update_timestmp" : "2014-10-02 01:02:46"
+        }, {
+            "services_typ_id" : "NTRPLC",
+            "std_services_dsc" : "Natures Place",
+            "last_update_timestmp" : "2014-10-02 01:02:46"
+        }, {
+            "services_typ_id" : "DELIBKRY",
+            "std_services_dsc" : "Deli/Bakery",
+            "last_update_timestmp" : "2014-10-02 01:02:46"
+        } ],
+        "hours" : [ {
+            "hours_id" : "1570STHRSSUN",
+            "hours_type" : 1,
+            "day_id" : 1,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        }, {
+            "hours_id" : "1570STHRSMON",
+            "hours_type" : 1,
+            "day_id" : 2,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        }, {
+            "hours_id" : "1570STHRSTUE",
+            "hours_type" : 1,
+            "day_id" : 3,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        }, {
+            "hours_id" : "1570STHRSWED",
+            "hours_type" : 1,
+            "day_id" : 4,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        }, {
+            "hours_id" : "1570STHRSTHU",
+            "hours_type" : 1,
+            "day_id" : 5,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        }, {
+            "hours_id" : "1570STHRSFRI",
+            "hours_type" : 1,
+            "day_id" : 6,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        }, {
+            "hours_id" : "1570STHRSSAT",
+            "hours_type" : 1,
+            "day_id" : 7,
+            "hours_range" : "7:00 am-10:00 pm",
+            "last_update_timestmp" : "2014-10-02 01:01:21"
+        } ],
+        "dates" : [ {
+            "dt_typ_ind" : "SO",
+            "typ_dt" : "2000-05-24",
+            "last_update_timestmp" : "2014-10-15 14:48:43"
+        } ]
+    }
+}

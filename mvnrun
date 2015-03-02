@@ -1,0 +1,25 @@
+#!/bin/bash
+
+PROPS=""
+MVN=mvn
+CLASS=com.cloudant.se.db.loader.App
+
+if [ -n "${cloudant_account}" ]; then
+	PROPS="$PROPS -Dcloudant_account=${cloudant_account}"
+fi
+
+if [ -n "${cloudant_database}" ]; then
+        PROPS="$PROPS -Dcloudant_database=${cloudant_database}"
+fi
+
+if [ -n "${cloudant_user}" ]; then
+        PROPS="$PROPS -Dcloudant_user=${cloudant_user}"
+fi
+
+if [ -n "${cloudant_password}" ]; then
+        PROPS="$PROPS -Dcloudant_password=${cloudant_password}"
+fi
+
+COMMAND="${MVN} exec:java -Dexec.mainClass=${CLASS} -Dexec.args=\"$*\" ${PROPS}"
+echo "Running ${COMMAND}"
+eval ${COMMAND}
