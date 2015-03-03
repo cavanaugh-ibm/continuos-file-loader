@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import com.cloudant.se.app.BaseApp;
@@ -40,7 +41,7 @@ public class App extends BaseApp implements DirWatcherCallback {
         // Load the file that was just created
         Path tempPath = moveToProcessing(dirStaging.resolve(path));
         log.info("Queueing processing for " + tempPath);
-        writerExecutor.submit(new JsonFileLoader(database, dirCompleted, dirFailed, tempPath, useFilenameAsSource(), getIdSourceFields()));
+        writerExecutor.submit(new JsonFileLoader(database, dirCompleted, dirFailed, tempPath, useFilenameAsSource(), mergeWithExisting(), getVersionField(), getIdSourceFields()));
     }
 
     @Override
@@ -52,6 +53,10 @@ public class App extends BaseApp implements DirWatcherCallback {
 
         watching = config.getBoolean("watch", false);
         watcher = new DirWatcher(dirStaging, this);
+
+        if (mergeWithExisting()) {
+            log.warn("MERGE asked for - array elements may not merge correctly");
+        }
     }
 
     protected void mergeOptions() {
@@ -62,10 +67,23 @@ public class App extends BaseApp implements DirWatcherCallback {
         }
     }
 
+    private String getVersionField() {
+        String versionField = config.getString("write.version.field", null);
+
+        if (StringUtils.isNotBlank(versionField)) {
+            throw new IllegalArgumentException("VERSION checking is not implemented yet");
+        }
+        return versionField;
+    }
+
     private String[] getIdSourceFields() {
         String[] fields = config.getStringArray("write.id.fields");
         Assert.notEmpty(fields, "Configuration must provide a valid list of fields to pull id from [write.id.fields]");
         return fields;
+    }
+
+    private boolean mergeWithExisting() {
+        return config.getBoolean("write.merge", false);
     }
 
     private boolean useFilenameAsSource() {
@@ -83,7 +101,7 @@ public class App extends BaseApp implements DirWatcherCallback {
                 for (Path path : stream) {
                     Path tempPath = moveToProcessing(path);
                     log.info("Queueing processing for " + tempPath);
-                    writerExecutor.submit(new JsonFileLoader(database, dirCompleted, dirFailed, tempPath, useFilenameAsSource(), getIdSourceFields()));
+                    writerExecutor.submit(new JsonFileLoader(database, dirCompleted, dirFailed, tempPath, useFilenameAsSource(), mergeWithExisting(), getVersionField(), getIdSourceFields()));
                 }
             } catch (IOException | DirectoryIteratorException e) {
                 log.fatal("Unable to read from the staging directory", e);

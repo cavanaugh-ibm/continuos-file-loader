@@ -21,6 +21,7 @@ import com.cloudant.se.Constants.WriteCode;
 import com.cloudant.se.db.exception.StructureException;
 import com.cloudant.se.db.writer.CloudantWriteResult;
 import com.cloudant.se.db.writer.CloudantWriter;
+import com.cloudant.se.util.UMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -34,23 +35,24 @@ public abstract class BaseFileLoader extends CloudantWriter {
     protected Path                path               = null;
     protected boolean             idFromFilename     = true;
     protected String[]            idSourceFields     = null;
+    protected boolean             mergeWithExisting  = false;
+    protected String              versionField       = null;
 
-    public BaseFileLoader(Database database, Path dirCompleted, Path dirFailed, Path path, boolean idFromFilename, String... idSourceFields) {
+    public BaseFileLoader(Database database, Path dirCompleted, Path dirFailed, Path path, boolean idFromFilename, boolean mergeWithExisting, String versionField, String... idSourceFields) {
         super(database);
 
         this.database = database;
-
+        this.dirCompleted = dirCompleted;
+        this.dirFailed = dirFailed;
+        this.path = path;
         this.idFromFilename = idFromFilename;
+        this.mergeWithExisting = mergeWithExisting;
+        this.versionField = versionField;
 
         if (!idFromFilename) {
             Assert.notEmpty(idSourceFields, "Must provide a list of fields to create the _id from");
             this.idSourceFields = idSourceFields;
         }
-
-        this.dirCompleted = dirCompleted;
-        this.dirFailed = dirFailed;
-
-        this.path = path;
     }
 
     @Override
@@ -96,13 +98,20 @@ public abstract class BaseFileLoader extends CloudantWriter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected Map<String, Object> handleConflict(Map<String, Object> failed) throws StructureException, JsonProcessingException, IOException {
-        //
-        // In this base version, all we want is the latest revision number
         Map<String, Object> fromC = get((String) failed.get("_id"));
-        failed.put("_rev", fromC.get("_rev"));
-
-        return failed;
+        if (mergeWithExisting) {
+            //
+            // If we are merging, we want to add in all the new information (except the revision) (DEEP MERGE)
+            failed.remove("_rev");
+            return UMap.deepMerge(fromC, failed);
+        } else {
+            //
+            // If we are not merging, we are replacing so all we want from the previous version is the revision
+            failed.put("_rev", fromC.get("_rev"));
+            return failed;
+        }
     }
 
     protected void moveFile(String id, CloudantWriteResult result) {

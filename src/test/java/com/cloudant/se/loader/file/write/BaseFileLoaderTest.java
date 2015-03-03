@@ -51,9 +51,9 @@ public class BaseFileLoaderTest {
 
     private BaseFileLoaderTestImpl getWriter(boolean useTitle, Path path) throws ConfigurationException {
         if (useTitle) {
-            return new BaseFileLoaderTestImpl(null, null, null, path, true);
+            return new BaseFileLoaderTestImpl(null, null, null, path, true, false, "NOT_USED");
         } else {
-            return new BaseFileLoaderTestImpl(null, null, null, path, false, "submap/subkey");
+            return new BaseFileLoaderTestImpl(null, null, null, path, false, false, "NOT_USED", "submap/subkey");
         }
     }
 

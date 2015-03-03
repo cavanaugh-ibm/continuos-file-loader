@@ -26,10 +26,11 @@ The following can come from either system properties, environment but NOT the co
 `mvn test`
 
 ## Open Tasks
-* Add flag to merge or replace
 * Add in version logic
+* Add in end-2-end tests
 
 ## Completed Tasks
+* Add flag to merge or replace
 
 ## License
 

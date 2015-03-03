@@ -1,2 +1,2 @@
 cp src/test/resources/store_1570.json play/staging/
-./mvnrun -c ../file.loader.donotcheckin $*
+./mvnrun -c examples/simple.properties $*

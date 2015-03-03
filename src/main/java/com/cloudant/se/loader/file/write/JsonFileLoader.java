@@ -9,8 +9,8 @@ import com.cloudant.client.api.Database;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonFileLoader extends BaseFileLoader {
-    public JsonFileLoader(Database database, Path dirCompleted, Path dirFailed, Path path, boolean idFromFilename, String... idSourceFields) {
-        super(database, dirCompleted, dirFailed, path, idFromFilename, idSourceFields);
+    public JsonFileLoader(Database database, Path dirCompleted, Path dirFailed, Path path, boolean idFromFilename, boolean mergeWithExisting, String versionField, String... idSourceFields) {
+        super(database, dirCompleted, dirFailed, path, idFromFilename, mergeWithExisting, versionField, idSourceFields);
     }
 
     @Override
