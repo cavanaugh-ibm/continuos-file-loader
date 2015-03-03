@@ -5,20 +5,31 @@ File based loader for Cloudant
 Note - this exists as its own project because it uses Java 7+ features and the other projects must stay at Java 6 for specific customers
 
 * [Tests](#tests)
+* [Open Tasks](#open-tasks)
+* [Completed Tasks](#completed-tasks)
 * [License](#license)
 
 ## Tests
 
-To run the test suite first edit the cloudant properties. Create or open the file `src/test/resources/cloudant-account.properties` and `src/test/resources/cloudant-base.properties`, provide values for the following properties
+To run the tests the following properties must be set.
 
-~~~ cloudant-account.properties
-cloudant.account=myCloudantAccount
-cloudant.username=testuser
-cloudant.password=testpassword
-cloudant.database.prefix=prefix for test database that will be created/destroyed
-~~~
+The following can come from either system properties, environment or the default configuration file `src/test/resources/cloudant.properties`
 
-Once all the required properties are provided in the properties file run `com.cloudant.test.com.cloudant.se.LoaderTestSuite` test class.
+* cloudant_test_account=account
+* cloudant_test_database_prefix=database
+* cloudant_test_user=user
+
+The following can come from either system properties, environment but NOT the configuration file
+
+* cloudant_test_password=password
+
+`mvn test`
+
+## Open Tasks
+* Add flag to merge or replace
+* Add in version logic
+
+## Completed Tasks
 
 ## License
 
@@ -30,9 +41,11 @@ Licensed under the apache license, version 2.0 (the "license"); you may not use 
 
 Unless required by applicable law or agreed to in writing, software distributed under the license is distributed on an "as is" basis, without warranties or conditions of any kind, either express or implied. See the license for the specific language governing permissions and limitations under the license.
 
-[query]: http://docs.cloudant.com/api/cloudant-query.html
-[search]: http://docs.cloudant.com/api/search.html
-[auth]: http://docs.cloudant.com/api/authz.html
-[issues]: https://github.com/cloudant/java-cloudant /issues
-[follow]: https://github.com/iriscouch/follow
-[request]:  https://github.com/mikeal/request
+## Links
+
+* [Issue Tracking](https://github.com/cavanaugh-ibm/file-data-loader/issues)
+* [SE Common](https://github.com/cavanaugh-ibm/se-common)
+* [Cloudant Query Docs](http://docs.cloudant.com/api/cloudant-query.html)
+* [Cloudant Search Docs](http://docs.cloudant.com/api/search.html)
+* [Cloudant Auth Docs](http://docs.cloudant.com/api/authz.html)
+* [Cloudant Changes Follower](https://github.com/iriscouch/follow)
