@@ -1,21 +1,21 @@
 {
     "store" : {
         "store_id" : 1570,
-        "store_name" : "Food Lion Grocery Store of Mooresville",
+        "store_name" : "Store Name",
         "store_status" : 1,
-        "store_line1address" : "835 Williamson Rd",
+        "store_line1address" : "1 My St",
         "store_line2address" : "",
-        "store_city" : "Mooresville",
-        "store_state" : "NC",
-        "store_zip" : "28117",
-        "store_phoneno" : "704-799-9425",
-        "store_latitude" : 35.557000,
-        "store_longitude" : -80.859600,
-        "store_shop_mall_dsc" : "Watermark Shopping Center",
+        "store_city" : "MyCity",
+        "store_state" : "MY",
+        "store_zip" : "55555",
+        "store_phoneno" : "555-123-4567",
+        "store_latitude" : 55.555000,
+        "store_longitude" : -88.888800,
+        "store_shop_mall_dsc" : "Someones Shopping Center",
         "last_update_timestmp" : "2014-10-15 14:48:43",
         "banner" : [ {
             "bnnr_nbr" : 1,
-            "bnnr_dsc" : "FOOD LION",
+            "bnnr_dsc" : "MY STORE",
             "last_update_timestmp" : "2006-08-23 19:47:28"
         } ],
         "services" : [ {
