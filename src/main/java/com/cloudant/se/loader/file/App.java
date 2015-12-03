@@ -41,17 +41,17 @@ public class App extends BaseApp implements DirWatcherCallback {
         // Load the file that was just created
         Path tempPath = moveToProcessing(dirStaging.resolve(path));
         log.info("Queueing processing for " + tempPath);
-        writerExecutor.submit(new JsonFileLoader(database, dirCompleted, dirFailed, tempPath, useFilenameAsSource(), mergeWithExisting(), getVersionField(), getIdSourceFields()));
+        submitCallable(new JsonFileLoader(getDatabase(), dirCompleted, dirFailed, tempPath, useFilenameAsSource(), mergeWithExisting(), getVersionField(), getIdSourceFields()));
     }
 
     @Override
     public void validateConfig() {
-        dirStaging = ensureReadWriteDirectory(config, "dir.staging", "staging").toPath();
-        dirProcessing = ensureReadWriteDirectory(config, "dir.processing", "processing").toPath();
-        dirCompleted = ensureReadWriteDirectory(config, "dir.completed", "completed").toPath();
-        dirFailed = ensureReadWriteDirectory(config, "dir.failed", "failed").toPath();
+        dirStaging = ensureReadWriteDirectory(getConfiguration(), "dir.staging", "staging").toPath();
+        dirProcessing = ensureReadWriteDirectory(getConfiguration(), "dir.processing", "processing").toPath();
+        dirCompleted = ensureReadWriteDirectory(getConfiguration(), "dir.completed", "completed").toPath();
+        dirFailed = ensureReadWriteDirectory(getConfiguration(), "dir.failed", "failed").toPath();
 
-        watching = config.getBoolean("watch", false);
+        watching = getConfigBool("watch", false);
         watcher = new DirWatcher(dirStaging, this);
 
         if (mergeWithExisting()) {
@@ -62,13 +62,13 @@ public class App extends BaseApp implements DirWatcherCallback {
     protected void mergeOptions() {
         super.mergeOptions();
 
-        if (((AppOptions) options).watch || config.getBoolean("watch", false)) {
-            config.setProperty("watch", true);
+        if (((AppOptions) getOptions()).watch || getConfigBool("watch", false)) {
+            setConfigValue("watch", true);
         }
     }
 
     private String getVersionField() {
-        String versionField = config.getString("write.version.field", null);
+        String versionField = getConfigStr("write.version.field", null);
 
         if (StringUtils.isNotBlank(versionField)) {
             throw new IllegalArgumentException("VERSION checking is not implemented yet");
@@ -77,17 +77,17 @@ public class App extends BaseApp implements DirWatcherCallback {
     }
 
     private String[] getIdSourceFields() {
-        String[] fields = config.getStringArray("write.id.fields");
+        String[] fields = getConfigStrArray("write.id.fields");
         Assert.notEmpty(fields, "Configuration must provide a valid list of fields to pull id from [write.id.fields]");
         return fields;
     }
 
     private boolean mergeWithExisting() {
-        return config.getBoolean("write.merge", false);
+        return getConfigBool("write.merge", false);
     }
 
     private boolean useFilenameAsSource() {
-        return config.getBoolean("write.id.usefilename", false);
+        return getConfigBool("write.id.usefilename", false);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class App extends BaseApp implements DirWatcherCallback {
                 for (Path path : stream) {
                     Path tempPath = moveToProcessing(path);
                     log.info("Queueing processing for " + tempPath);
-                    writerExecutor.submit(new JsonFileLoader(database, dirCompleted, dirFailed, tempPath, useFilenameAsSource(), mergeWithExisting(), getVersionField(), getIdSourceFields()));
+                    submitCallable(new JsonFileLoader(getDatabase(), dirCompleted, dirFailed, tempPath, useFilenameAsSource(), mergeWithExisting(), getVersionField(), getIdSourceFields()));
                 }
             } catch (IOException | DirectoryIteratorException e) {
                 log.fatal("Unable to read from the staging directory", e);
